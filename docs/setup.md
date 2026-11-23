@@ -2,7 +2,27 @@
 
 비밀 키는 이 파일에 적지 않습니다. `.env.local` 도 깃에 올리지 않습니다. 키는 개인 메시지로만 주고받습니다.
 
-목·금에 Vercel 주소와 Supabase Redirect URL 을 이 문서에 이어서 적습니다. 아래는 월요일에 필요한 Supabase 준비입니다.
+목·금에 Vercel 주소와 Supabase Redirect URL 을 이 문서에 이어서 적습니다.
+
+## 지금 상태 (2026년 11월 24일, 한국시간)
+
+프로젝트는 만들어 두었습니다. 키 값은 이 문서에 없습니다.
+
+| 항목 | 값 |
+| --- | --- |
+| 이름 | `workbridge` |
+| 지역 | 서울 (Northeast Asia) |
+| API 주소 | `https://tztgirorrcahhrrqrain.supabase.co` |
+| 대시보드 | https://supabase.com/dashboard/project/tztgirorrcahhrrqrain |
+| 프로필 테이블 | 실행 완료. `profiles` 와 Storage `avatars` 가 있습니다. SQL을 다시 실행하지 마세요. |
+
+아직 대시보드에서만 할 수 있는 것:
+
+1. **Project Settings → API** 에서 `service_role`(secret) 키를 복사해 `.env.local` 의 `SUPABASE_SERVICE_ROLE_KEY` 에 넣습니다. 이 연결로는 비밀 키가 나오지 않습니다.
+2. **Authentication → Sign In / Providers → Email** 에서 **Confirm email** 을 끕니다. https://supabase.com/dashboard/project/tztgirorrcahhrrqrain/auth/providers
+3. **Authentication → URL Configuration** 에서 Site URL 은 `http://localhost:3000`, Redirect URLs 에는 `http://localhost:3000/auth/callback` 을 넣습니다. https://supabase.com/dashboard/project/tztgirorrcahhrrqrain/auth/url-configuration
+
+구글 로그인 리디렉션 주소는 `https://tztgirorrcahhrrqrain.supabase.co/auth/v1/callback` 입니다.
 
 ## 1. Supabase 프로젝트 만들기
 
