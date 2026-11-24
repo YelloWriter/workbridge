@@ -226,6 +226,7 @@ export function parseProjectForm(form: FormData): { ok: true; value: ProjectInpu
 export function projectErrorText(message: string) {
   const errors: [string, string][] = [
     ["HAS_APPLICANTS_CLOSE_FIRST", "지원자가 있는 프로젝트는 먼저 모집을 마감한 뒤 삭제할 수 있습니다."],
+    ["STATUS_CHANGE_NOT_ALLOWED", "프로젝트 상태는 직접 바꿀 수 없습니다. 모집 마감 등은 해당 버튼으로 해 주세요."],
     ["HAS_APPLICANTS", "지원자가 있는 프로젝트는 예산과 모집 마감일을 바꿀 수 없습니다."],
     ["cannot delete this project", "삭제할 수 없는 프로젝트입니다. 계약이 진행 중이거나 이미 삭제된 프로젝트일 수 있습니다."],
     ["OWNER_REQUIRED", "이 프로젝트를 등록한 의뢰인만 처리할 수 있습니다."],

@@ -106,9 +106,10 @@
 | --- | --- |
 | `0200_projects.sql` | `projects` 테이블, RLS(누구나 조회·삭제 제외 / 의뢰인 본인만 등록·수정), 삭제 함수 |
 | `0201_bookmarks.sql` | `bookmarks` 테이블, RLS(본인만) |
-| `0202_project_search.sql` | `project_display_status`, `search_projects`(검색·필터·정렬·페이지), `project_applicant_counts`(지원자 수만 공개), `projects_guard_update`(지원자 있으면 예산·마감일 잠금), `soft_delete_project`(지원자 있는 모집 중이면 삭제 거부) |
+| `0202_project_search.sql` | `project_display_status`, `search_projects`(검색·필터·정렬·페이지), `project_applicant_counts`(지원자 수만 공개), `project_has_applicants`, `projects_guard_update`(지원자 있으면 예산·마감일 잠금), `soft_delete_project`(지원자 있는 모집 중이면 삭제 거부) |
+| `0203_project_status_guard.sql` | `projects_guard_status`: 의뢰인이 직접 보내는 요청으로는 `scheduled` ↔ `recruiting` 외의 상태 변경을 막음 |
 
-실행 순서: 1번의 `0100` → `0200` → `0201` → `0202` → (3번) `0300` → `0301`. `0202` 는 `0300` 보다 먼저 실행해도 됩니다.
+실행 순서: 1번의 `0100` → `0200` → `0201` → `0202` → `0203` → (3번) `0300` → `0301`. `0202`, `0203` 은 `0300` 보다 먼저 실행해도 됩니다.
 
 ## 4. 입력·출력 규칙
 
@@ -134,7 +135,7 @@
 | 북마크 조회·추가·삭제 | X | 본인 것만 | — | — |
 
 - 삭제된 프로젝트는 아무에게도 조회되지 않습니다. `deleted_at` 은 `soft_delete_project` 로만 채웁니다.
-- 다른 번호가 `projects.status` 를 바꾸는 일(수락 → `contract_pending`, 서명·결제 등)은 각자의 DB 함수에서 합니다. 보안 규칙은 "의뢰인 본인만 수정"이므로, 프리랜서나 시스템이 바꿔야 하는 상태는 해당 번호가 `security definer` 함수로 처리해야 합니다.
+- **`projects.status` 는 직접 바꿀 수 없습니다(0203).** 의뢰인이 직접 보내는 요청으로는 `scheduled` ↔ `recruiting` 만 가능합니다. 나머지(수락 → `contract_pending`, 모집 마감, 합의 결렬, 서명, 결제, 납품, 완료)는 각 담당의 **`security definer` DB 함수**로만 바뀝니다. 4번 함수도 반드시 그렇게 만들어야 합니다. 서버 전용 서비스 키와 SQL Editor 는 막지 않습니다.
 
 ## 6. 다른 번호에 요청할 것
 - **1번:** 정해진 시각에 `sync` 를 실행하는 장치(Vercel Cron 등)가 필요하면 배포 설정(`vercel.json`)과 비밀 값(`CRON_SECRET`)을 요청. 지금은 접속할 때 실행하는 방식만 있습니다.
