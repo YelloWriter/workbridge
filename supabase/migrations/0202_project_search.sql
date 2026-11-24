@@ -116,6 +116,27 @@ $$;
 revoke all on function public.project_applicant_counts(uuid[]) from public;
 grant execute on function public.project_applicant_counts(uuid[]) to anon, authenticated, service_role;
 
+-- ③-2 지원자가 있는지 확인하는 도우미. 0300 지원 테이블이 아직 없으면 "없음"으로 봅니다.
+--   (테이블 이름을 if 조건 안에 직접 쓰면, 테이블이 없는 DB에서 함수가 통째로 실패해서 따로 뺐습니다)
+create or replace function public.project_has_applicants(p_project_id uuid)
+returns boolean
+language plpgsql
+stable
+security definer
+set search_path = ''
+as $$
+begin
+  if to_regclass('public.applications') is null then
+    return false;
+  end if;
+  return exists (select 1 from public.applications a
+                  where a.project_id = p_project_id and a.deleted_at is null);
+end;
+$$;
+
+revoke all on function public.project_has_applicants(uuid) from public;
+grant execute on function public.project_has_applicants(uuid) to anon, authenticated, service_role;
+
 -- ④ 지원자가 있는 프로젝트는 예산과 모집 마감일을 바꿀 수 없습니다.
 --   화면에서도 막지만, 직접 요청이 와도 여기서 한 번 더 막습니다.
 --   다른 번호가 만든 DB 함수(수락 등)는 예산·마감일을 바꾸지 않으므로 영향이 없습니다.
@@ -127,9 +148,7 @@ as $$
 begin
   if (new.budget is distinct from old.budget
       or new.recruit_end_at is distinct from old.recruit_end_at)
-     and to_regclass('public.applications') is not null
-     and exists (select 1 from public.applications a
-                  where a.project_id = old.id and a.deleted_at is null) then
+     and public.project_has_applicants(old.id) then
     raise exception 'HAS_APPLICANTS: 지원자가 있는 프로젝트는 예산과 모집 마감일을 바꿀 수 없습니다.'
       using errcode = '23514';
   end if;
@@ -164,9 +183,7 @@ begin
   end if;
 
   if v_status in ('scheduled', 'recruiting')
-     and to_regclass('public.applications') is not null
-     and exists (select 1 from public.applications a
-                  where a.project_id = p_project_id and a.deleted_at is null) then
+     and public.project_has_applicants(p_project_id) then
     raise exception 'HAS_APPLICANTS_CLOSE_FIRST';
   end if;
 
