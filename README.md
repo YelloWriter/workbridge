@@ -37,8 +37,9 @@ SQL 파일은 표 만들기 지시서입니다. 파일 내용을 사람이 고�
 | 순서 | 파일 | 생기는 것 | 공용 창고 |
 | --- | --- | --- | --- |
 | 1 | `supabase/migrations/0100_profiles.sql` | 회원 프로필 표, 가입하면 프로필이 자동으로 생기는 장치, 프로필 사진 보관함 `avatars` | 이미 실행됨. 다시 실행하지 않음 |
-| 2 | `supabase/migrations/0200_projects.sql` | 프로젝트 표. 의뢰인이 올린 외주 글 | 아직 실행 안 됨 |
-| 3 | `supabase/migrations/0201_bookmarks.sql` | 북마크 표. 프리랜서가 프로젝트를 찜하는 기록 | 아직 실행 안 됨. 반드시 0200 다음 |
+| 2 | `supabase/migrations/0200_projects.sql` | 프로젝트 표. 의뢰인이 올린 외주 글 | 이미 실행됨. 다시 실행하지 않음 |
+| 3 | `supabase/migrations/0201_bookmarks.sql` | 북마크 표. 프리랜서가 프로젝트를 찜하는 기록 | 이미 실행됨. 다시 실행하지 않음 |
+| 4 | `supabase/migrations/0300_applications.sql` 다음 파일들 | 지원, 알림, 계약, 결제, 리뷰 | 아직 실행 안 됨. 번호 순서대로, 한 파일씩 |
 
 앞으로 파일이 더 생기면 파일 이름 앞의 숫자가 실행 순서입니다.
 
@@ -52,7 +53,7 @@ SQL 파일은 표 만들기 지시서입니다. 파일 내용을 사람이 고�
 
 ### 파일 하나 실행하는 방법
 
-아직 안 돌린 파일만 하면 됩니다. 오늘은 `0200_projects.sql`을 먼저, 성공하면 `0201_bookmarks.sql`입니다.
+아직 안 돌린 파일만 하면 됩니다. 다음은 `0300_applications.sql`입니다. 그 앞에 `0100`, `0200`, `0201`은 이미 끝났습니다.
 
 1. 브라우저에서 SQL을 붙여 넣는 화면을 엽니다. https://supabase.com/dashboard/project/tztgirorrcahhrrqrain/sql/new
 2. GitHub에서 실행할 파일을 엽니다. 파일 전체를 선택해서 복사합니다. 맨 위 설명 주석부터 맨 마지막 줄까지입니다.

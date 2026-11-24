@@ -2,7 +2,35 @@
 
 비밀 키는 이 파일에 적지 않습니다. `.env.local` 도 깃에 올리지 않습니다. 키는 개인 메시지로만 주고받습니다.
 
-목·금에 Vercel 주소와 Supabase Redirect URL 을 이 문서에 이어서 적습니다.
+## 배포와 주소 (2026년 11월 24일, 한국시간)
+
+GitHub의 `main`에 올라가면 Vercel이 자동으로 다시 배포합니다.
+
+| 항목 | 값 |
+| --- | --- |
+| 사이트 주소 | https://workbridge-tom-f7d5.vercel.app |
+| Vercel 프로젝트 | `workbridge` (팀 Tom) |
+| 배포되는 브랜치 | `main` |
+
+Supabase **Authentication → URL Configuration** 에 아래를 넣어야 로그인 뒤에 사이트로 돌아옵니다. 이 화면은 여기서 대신 저장할 수 없어서, 대시보드에 직접 붙여 넣어야 합니다. https://supabase.com/dashboard/project/tztgirorrcahhrrqrain/auth/url-configuration
+
+- Site URL: `https://workbridge-tom-f7d5.vercel.app`
+- Redirect URLs:
+  - `http://localhost:3000/auth/callback`
+  - `https://workbridge-tom-f7d5.vercel.app/auth/callback`
+
+구글 로그인 제공자에 넣는 주소는 그대로 `https://tztgirorrcahhrrqrain.supabase.co/auth/v1/callback` 입니다.
+
+## 시연 계정
+
+비밀번호는 둘 다 `Workbridge-demo-1124` 입니다. 수업 시연용이라 여기 적습니다. 실제 서비스 비밀번호는 아닙니다.
+
+| 역할 | 이메일 | 이름 |
+| --- | --- | --- |
+| 의뢰인 | `client.demo@mailinator.com` | 한지민 |
+| 프리랜서 | `freelancer.demo@mailinator.com` | 김서준 |
+
+의뢰인 계정으로 만든 프로젝트는 쇼핑몰 상품 목록, 매장 예약 앱, 판매 수치 대시보드입니다. 같은 내용을 빈 데이터베이스에 다시 넣으려면 `0201` 다음에 `supabase/seed.sql` 을 실행합니다.
 
 ## 지금 상태 (2026년 11월 24일, 한국시간)
 
