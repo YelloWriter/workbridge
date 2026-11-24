@@ -39,8 +39,9 @@ try {
   await installTeamSchema(db);
   for (const [id, role] of [[client, "client"], [first, "freelancer"], [second, "freelancer"], [stranger, "freelancer"], [incomplete, "freelancer"]]) {
     await db.query("insert into auth.users(id,email) values($1,$2)", [id, `${id}@test.example`]);
-    await db.query("update profiles set role=$2,name='이름',bio=$3,category='웹 개발',skills=array['TypeScript'] where id=$1", [id, role, id === incomplete ? "" : "자기소개"]);
+    await db.query("update profiles set role=$2,name='이름',bio=$3,category='웹 개발',skills=array['TypeScript'] where id=$1", [id, role, "자기소개"]);
   }
+  await db.query("update profiles set name=null where id=$1", [incomplete]);
   for (const project of [p1, p2, p3, p4, p5, p6]) {
     await db.query("insert into projects(id,client_id,title,description,category,budget,status,recruit_start_at,recruit_end_at) values ($1,$2,'테스트 프로젝트','검증용 프로젝트입니다.','웹 개발',500000,'recruiting',now()-interval '1 day',now()+interval '1 day')", [project, client]);
   }
@@ -156,6 +157,12 @@ try {
     check(await scalar("select name from profiles where id=$1", [first]), "이름", "name allowed by real profile column grants");
     await rejected(() => db.query("select email from profiles where id=$1", [first]), /permission denied/);
   });
+  await db.query("update profiles set role='freelancer',name='이름만 작성',bio=null,category=null,skills='{}' where id=$1", [stranger]);
+  const nameOnlyProject = "20000000-0000-0000-0000-000000000007";
+  await db.query("insert into projects(id,client_id,title,description,category,budget,status,recruit_start_at,recruit_end_at) values ($1,$2,'이름만 작성한 지원','이름만 필수인 프로필 검증','웹 개발',500000,'recruiting',now()-interval '1 day',now()+interval '1 day')", [nameOnlyProject, client]);
+  const nameOnlyApplication = await as("authenticated", stranger, () => submit(nameOnlyProject));
+  check(await scalar("select status from applications where id=$1", [nameOnlyApplication]), "pending", "name-only profile can submit without redirect loop");
+  check(await as("authenticated", stranger, () => scalar("select application_member_is_active()")), true, "name-only profile is active");
   await db.query("update profiles set deleted_at=now() where id=$1", [client]);
   await as("authenticated", client, async () => {
     await rejected(() => accept(g), /OWNER_REQUIRED/);
@@ -163,5 +170,5 @@ try {
     await rejected(() => close(p2), /OWNER_REQUIRED/);
     check(await scalar("select count(*)::int from applications"), 0, "deleted owner cannot read applications");
   });
-  console.log(`PASS: ${assertions} database assertions (ephemeral PostgreSQL/PGlite; real 0100–0302 team migrations).`);
+  console.log(`PASS: ${assertions} database assertions (ephemeral PostgreSQL/PGlite; real 0100–0303 team migrations).`);
 } finally { await db.close(); }

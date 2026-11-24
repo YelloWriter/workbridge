@@ -16,8 +16,8 @@ export type ActionState = { error?: string; success?: string };
 export type ApplyState = ActionState & { values?: { coverLetter: string; amount: string; days: string } };
 export const uuidPattern = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
-export function isProfileComplete(profile: { name?: string; bio?: string; category?: string; skills?: string[] }) {
-  return Boolean(profile.name?.trim() && profile.bio?.trim() && profile.category?.trim() && profile.skills?.length);
+export function isProfileComplete(profile: { name?: string | null }) {
+  return Boolean(profile.name?.trim());
 }
 export function money(amount: number) { return `${Number(amount).toLocaleString("ko-KR")}원`; }
 export function dateTime(value: string) {

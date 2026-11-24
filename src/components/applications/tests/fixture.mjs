@@ -23,7 +23,7 @@ export async function installTeamSchema(db) {
     create function storage.foldername(text) returns text[] language sql immutable as $$
       select (string_to_array($1, '/'))[1:array_length(string_to_array($1, '/'), 1)-1] $$;
   `);
-  for (const file of ["0100_profiles.sql", "0200_projects.sql", "0201_bookmarks.sql", "0300_applications.sql", "0301_notifications.sql", "0302_application_access.sql"]) {
+  for (const file of ["0100_profiles.sql", "0200_projects.sql", "0201_bookmarks.sql", "0300_applications.sql", "0301_notifications.sql", "0302_application_access.sql", "0303_profile_completion.sql"]) {
     await db.exec(await readFile(resolve("supabase/migrations", file), "utf8"));
   }
 }
