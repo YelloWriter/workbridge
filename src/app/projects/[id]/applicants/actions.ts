@@ -24,5 +24,5 @@ export async function decideApplication(projectId: string, applicationId: string
   revalidatePath("/projects");
   revalidatePath("/me/applications");
   revalidatePath("/notifications");
-  return {};
+  return { success: decision === "accept" ? "지원자를 수락했습니다." : "지원자를 거절했습니다." };
 }

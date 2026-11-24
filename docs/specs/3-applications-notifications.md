@@ -1,15 +1,15 @@
 # 3번 기능 명세 — 지원·선정·알림
 
-작성일: 2026-11-23. 기준: `CLAUDE.md`, `AGENTS.md`, `docs/TEAM.md` 및 사용자 요구.
+작성일: 2026-11-23. 갱신: 2026-11-24. 기준: `CLAUDE.md`, `AGENTS.md`, `docs/TEAM.md` 및 사용자 요구.
 브랜치: `feat/3-applications-notifications`. 담당 밖의 파일은 변경하지 않는다.
 
 ## 현재 준비 상태
 
 - 지원, 지원자 관리, 내 지원 현황, 알림 페이지와 헤더용 알림 종 구현.
-- `0300_applications.sql`, `0301_notifications.sql` 작성. 실 DB에 적용하지 않았다.
-- 저장소의 `main`에는 아직 profiles/projects 마이그레이션과 인증·프로필·프로젝트 화면이 없다.
+- `0300`~`0303` SQL 작성. 실 DB에 적용하지 않았다.
+- 최신 `main`의 실제 profiles/projects SQL과 인증·프로필 화면을 반영했다. 프로필 저장 후 지원 복귀도 로컬에서 확인했다. 프로젝트·계약 화면 연결은 아직 남아 있다.
 - Supabase 환경 변수·팀 공용 DB가 준비되기 전에는 연결 대기 안내를 보여준다.
-- 실제 계정 3개 검증, 팀 간 연결 및 Supabase Realtime 수신 확인은 미완료이다. 로컬 검증과 구분한다.
+- 임시 계정 3개로 지원 → 수락 → 자동 거절 → 알림과, WebSocket 대역을 통해 종/목록의 새로고침 없는 갱신을 확인했다. 실제 Supabase 계정 3개 검증, 공통 헤더/계약 연결 및 실제 Supabase Realtime 수신 확인은 미완료이다.
 
 ## 화면·입력·출력
 
@@ -22,11 +22,14 @@
 | `NotificationBell` | 최초 미확인 개수 조회, Realtime 이벤트 시 재조회, 포커스 복귀·30초 주기 보완 조회 | 미확인 숫자, 99 초과는 `99+`, 조회 실패는 `!` | 비로그인·키 미설정이면 표시 안 함. 1번이 헤더에 삽입 |
 
 조회 오류는 재시도 화면, 처리 오류는 폼 안내로 표시한다. DB 오류 원문과 키는 화면으로 보내지 않는다.
-프로필 완성의 초기 기준은 name, bio, category의 비어 있지 않은 값과 skills 1개 이상이다. 위시켓 조건을 복사하지 않았고 1번과 통일해야 한다.
+내 지원 현황과 지원자 관리는 30개씩 페이지를 나누고 전체 건수를 표시한다. 지원자 이름은 공개 프로필의 name 컬럼만 읽는다. 지원서 제출 검증 실패 시 작성 내용을 유지한다.
+프로필 완성 기준은 1번의 최신 프로필 화면에 맞춰 **name이 비어 있지 않은 상태**로 통일했다. bio/category/skills는 선택 입력이다. 활동 중인 freelancer 역할인지는 별도로 서버와 RPC에서 검사한다. 0303이 초기의 더 강한 조건을 교체한다.
 
 ## 데이터
 
 `0300`은 `public.applications`, `0301`은 `public.notifications`와 업무 RPC를 생성한다.
+`0302`는 기존 테이블을 다시 만들지 않고 회원 상태 검사, RLS와 업무 함수만 보완한다. 이미 적용한 0300/0301을 다시 만들지 않고 접근 제어만 보완한다.
+`0303`은 지원 시 프로필 필수 조건을 이름으로 통일한다. 이미 적용한 SQL은 재실행하지 않고, 미적용 번호만 순서대로 실행한다.
 실행 전 1번의 profiles와 2번의 projects가 UUID 기본키 및 TEAM.md의 필수 컬럼으로 존재해야 한다.
 함수는 `projects.client_id`, `status`, `deleted_at`, `recruit_start_at`, `recruit_end_at`을 사용한다. 모집 시각은 시간대가 포함된 값으로 합의해야 한다.
 
@@ -157,16 +160,19 @@ JS `createNotification`도 같은 SQL 함수를 사용한다. 3번의 지원 관
 - applications SELECT: 지원한 본인 또는 그 프로젝트의 의뢰인만. 프로젝트가 비공개 상태로 전환되어도 소유자 검사 함수가 지원서 조회를 유지한다.
 - applications 클라이언트 직접 INSERT/UPDATE/DELETE 금지. 인증·업무 권한을 검사하는 RPC만 사용.
 - notifications SELECT: 수신자 본인만. UPDATE 권한은 read_at 컬럼에만 부여. 수신자·제목·본문 변경이나 임의 삽입 금지.
+- `application_member_is_active()`는 인증한 본인의 탈퇴 여부만 반환한다. 0100이 deleted_at 컬럼 조회를 공개하지 않으므로 별도 안전한 함수를 사용한다. 탈퇴 계정은 지원서/알림 조회·읽음 변경 및 업무 RPC가 차단된다.
+- 0100의 role은 가입 직후 null일 수 있다. null은 프리랜서로 취급하지 않으며 화면은 역할 선택으로 보낸다. 수락 대상도 활동 중인 프리랜서여야 한다.
 - SECURITY DEFINER 함수는 search_path를 빈 값으로 고정하고 객체 이름을 명시한다. PUBLIC/anon의 RPC 실행 권한 회수.
 - 폼의 지원서 ID·프로젝트 ID는 액션과 DB에서 다시 확인한다. 알림 이동 주소는 제출 폼이 아닌 DB 값 사용. 외부 URL·이중 슬래시·백슬래시·제어문자 금지.
 - 일반 클라이언트는 Supabase 공개 URL·anon 키와 RLS를 사용한다. 서비스 역할 키·다른 서비스의 비밀 키는 NEXT_PUBLIC_ 금지.
 - 헤더에서 미확인 숫자 표시가 실패하면 0이라고 오해시키지 않고 `!` 표시.
+- 읽음/모두 읽음은 루트 layout도 재검증한다. 헤더용 종은 수신자와 서버 조회 개수를 key로 사용해 변경된 숫자를 즉시 반영한다. 실제 1번 헤더에 삽입한 상태의 통합 검사는 남아 있다.
 
 ## 통합 담당자에게 전달할 요청
 
 다음은 전달용 문구이며 실제 메시지를 보내지는 않았다.
 
-1. **1번님:** profiles와 인증/프로필 화면을 연결해 주세요. 프리랜서 완성 기준(name/bio/category/skills)을 맞추고 next 복귀를 지원해 주세요. 헤더 서버 컴포넌트에서 `import { NotificationBell } from '@/components/notifications/notification-bell'` 후 `<NotificationBell />`을 넣어 주세요. 내 지원 현황·알림 메뉴도 연결해 주세요.
+1. **1번님:** 최신 Header는 Client Component이므로 `import { NotificationBellWidget } from '@/components/notifications/notification-bell-widget'` 후 기존 `data-slot="header-notifications"` 자리에 `<NotificationBellWidget />`을 넣어 주세요. server-only 모듈을 사용하는 `notification-bell.tsx`는 현재 클라이언트 헤더에 직접 import하면 안 됩니다. 이름만 필수인 프로필 조건과 next 복귀는 3번에서 맞춰 로컬 검증했습니다. 공통 Header의 기존 ESLint 오류(16행 set-state-in-effect)도 수정이 필요합니다.
 2. **2번님:** projects의 UUID/필드·모집 시간대를 확인해 주세요. 상세의 지원 버튼은 `/projects/${id}/apply`, 본인 지원자 관리는 `/projects/${id}/applicants`입니다. 수동/자동 마감은 `close_project_applications` RPC로만 처리해 주세요. 수락·거절 이후에도 의뢰인은 자신의 프로젝트를, 지원자는 자신의 지원 대상 프로젝트의 제목·상세를 읽을 수 있는 정책을 검토해 주세요.
 3. **4번님:** 수락 결과 applications의 accepted_agreed_amount/accepted_at을 읽어 계약 협의를 시작해 주세요. 계약 생성의 중복은 application_id로 막아 주세요. 합의 결렬 시 프로젝트 복귀와 선정 지원 rejected/negotiation_failed 변경·알림을 하나의 RPC에서 처리하고 프로젝트 행을 먼저 잠가 주세요. 이미 auto 거절된 지원은 복원하지 않습니다. 계약 생성 시점/연결 동작은 통합 시 확인이 필요합니다.
 4. **4·5번님:** 단독 서버 알림은 createNotification, 여러 테이블 변경에 붙는 알림은 업무 RPC 내부 create_notification을 사용해 주세요.
@@ -174,10 +180,12 @@ JS `createNotification`도 같은 SQL 함수를 사용한다. 3번의 지원 관
 ## 실행·검증 순서
 
 1. 1번·2번의 `0100`~`0299` 마이그레이션을 먼저 합친다. 실제 컬럼·타입을 대조한다.
-2. 팀 공용 DB에서 `0300` → `0301` 순서로 실행한다. 아직 실행하지 않았다.
+2. 팀 공용 DB에서 아직 적용하지 않은 SQL만 `0300` → `0301` → `0302` → `0303` 순서로 실행한다. 이 작업에서는 실 DB에 실행하지 않았다.
 3. 1번에게 받은 공개 URL·anon 키 및 서버 전용 키를 `.env.local`에 입력한다. 현재 파일을 만들거나 키를 받지 않았다.
 4. `npm run lint`, `npm run build`로 검사한다.
 5. `src/components/applications/tests/database.mjs`로 임시 DB 검증을 재현한다. PGlite는 저장소 dependency에 추가하지 않고 외부 테스트 폴더에 설치할 수 있다. `WORKBRIDGE_PGLITE_MODULE`에 그 모듈의 `dist/index.js` 절대 경로를 지정해 실행한다.
-6. 아래 스프린트 검증 기록의 실제 계정 시나리오를 실행한다.
+6. `docs/sprints/2026-11-24-3-validation.md`의 로컬 재현 방법과 남은 실제 계정 시나리오를 실행한다.
 
-Realtime: 0301은 Supabase의 `supabase_realtime` publication이 있으면 notifications만 추가한다. 브라우저에서 수신자 필터를 적용하며 RLS도 작동한다. 서비스에서 Realtime 기능을 사용할 수 없으면 포커스·30초 보완 조회로 종 숫자는 갱신된다. 전체 목록의 실시간 갱신은 헤더에 종을 연결한 상태에서 동작한다. 실제 Supabase 검증은 아직 하지 않았다.
+Realtime: 0301은 Supabase의 `supabase_realtime` publication이 있으면 notifications만 추가한다. 브라우저에서 수신자 필터를 적용하며 RLS도 작동한다. 알림 목록과 종은 각각 구독하므로 헤더를 연결하기 전에도 목록은 갱신된다. 이벤트를 200ms 동안 묶고 동시에 하나의 개수 조회만 실행한다. 채널 오류 시 30초 보완 조회, 포커스·온라인 복귀·탭 재표시 때 재조회하며 로그아웃/계정 전환/화면 이탈 때 구독과 타이머를 정리한다. 실제 Supabase 검증은 아직 하지 않았다.
+
+목~금 범위 검증·실서비스 재현 방법·회고: `docs/sprints/2026-11-24-3-final.md`.

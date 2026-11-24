@@ -5,6 +5,7 @@ import { Section, Notice, SetupNotice } from "@/components/applications/section"
 import { dateTime } from "@/components/applications/model";
 import { readAllNotifications, readNotification } from "./actions";
 import { ReadAllButton } from "@/components/notifications/read-all-button";
+import { NotificationLiveUpdates } from "@/components/notifications/notification-live-updates";
 
 export default function NotificationsPage(props: { searchParams: Promise<{ page?: string; error?: string }> }) {
   return <Suspense fallback={<Section title="알림" description="새 소식을 확인하고 있습니다."><Notice>불러오는 중…</Notice></Section>}><NotificationsContent {...props} /></Suspense>;
@@ -22,6 +23,7 @@ async function NotificationsContent({ searchParams }: { searchParams: Promise<{ 
   ]);
   if (error || countError) throw new Error("알림을 불러오지 못했습니다.");
   return <Section title="알림" description="알림을 누르면 읽음으로 표시하고 관련 화면으로 이동합니다.">
+    <NotificationLiveUpdates userId={user.id} initialCount={unread ?? 0} />
     <div className="mb-6 flex items-center justify-between gap-4"><p className="text-sm text-slate-600">안 읽은 알림 {unread ?? 0}개</p>
       <form action={readAllNotifications}><ReadAllButton /></form>
     </div>

@@ -12,11 +12,12 @@ export type Application = {
   reject_reason: keyof typeof reasonLabels | null; accepted_agreed_amount: number | null;
   created_at: string;
 };
-export type ActionState = { error?: string };
+export type ActionState = { error?: string; success?: string };
+export type ApplyState = ActionState & { values?: { coverLetter: string; amount: string; days: string } };
 export const uuidPattern = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
-export function isProfileComplete(profile: { name?: string; bio?: string; category?: string; skills?: string[] }) {
-  return Boolean(profile.name?.trim() && profile.bio?.trim() && profile.category?.trim() && profile.skills?.length);
+export function isProfileComplete(profile: { name?: string | null }) {
+  return Boolean(profile.name?.trim());
 }
 export function money(amount: number) { return `${Number(amount).toLocaleString("ko-KR")}원`; }
 export function dateTime(value: string) {
@@ -34,6 +35,7 @@ export function rpcError(message: string) {
     ALREADY_APPLIED: "이미 지원한 프로젝트입니다. 내 지원 현황을 확인해 주세요.",
     APPLICATION_ALREADY_DECIDED: "이미 결과가 결정된 지원서입니다. 화면을 새로고침해 주세요.",
     INVALID_INPUT: "금액, 기간과 자기소개를 다시 확인해 주세요.",
+    APPLICANT_UNAVAILABLE: "현재 활동하지 않는 지원자입니다. 다른 지원자를 확인해 주세요.",
   };
   return Object.entries(errors).find(([code]) => message.includes(code))?.[1]
     ?? "처리하지 못했습니다. 잠시 후 다시 시도해 주세요.";
