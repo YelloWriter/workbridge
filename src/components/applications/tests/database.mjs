@@ -1,7 +1,7 @@
 // Run against an ephemeral PostgreSQL engine, never the shared Supabase project.
 // WORKBRIDGE_PGLITE_MODULE=/absolute/path/to/pglite/dist/index.js node src/components/applications/tests/database.mjs
 import assert from "node:assert/strict";
-import { readFile } from "node:fs/promises";
+import { installTeamSchema } from "./fixture.mjs";
 import { resolve } from "node:path";
 import { pathToFileURL } from "node:url";
 
@@ -36,33 +36,13 @@ const submit = (project = p1, amount = 500000) => scalar("select public.submit_a
 const accept = (id, amount = 600000) => scalar("select public.accept_application($1, $2)", [id, amount]);
 const close = (project) => scalar("select public.close_project_applications($1)", [project]);
 try {
-  // Minimal fixtures reproduce the TEAM.md contract. They do not replace the
-  // real 0100/0200 migrations, which must also be tested once integrated.
-  await db.exec(`
-    create role anon; create role authenticated; create role service_role bypassrls;
-    create schema auth;
-    create function auth.uid() returns uuid language sql stable as $$
-      select nullif(current_setting('request.jwt.claim.sub', true), '')::uuid $$;
-    create function auth.role() returns text language sql stable as $$
-      select current_setting('request.jwt.claim.role', true) $$;
-    grant usage on schema auth, public to anon, authenticated, service_role;
-    grant execute on all functions in schema auth to anon, authenticated, service_role;
-    create table public.profiles(id uuid primary key, role text not null, name text, bio text, category text, skills text[]);
-    create table public.projects(id uuid primary key, client_id uuid references profiles(id), title text,
-      status text not null, recruit_start_at timestamptz, recruit_end_at timestamptz, deleted_at timestamptz);
-    alter table public.projects enable row level security;
-    create policy projects_read on public.projects for select to authenticated
-      using (status in ('scheduled', 'recruiting') or client_id = auth.uid());
-    grant select on public.projects, public.profiles to authenticated;
-  `);
-  for (const file of ["0300_applications.sql", "0301_notifications.sql"]) {
-    await db.exec(await readFile(resolve("supabase/migrations", file), "utf8"));
-  }
+  await installTeamSchema(db);
   for (const [id, role] of [[client, "client"], [first, "freelancer"], [second, "freelancer"], [stranger, "freelancer"], [incomplete, "freelancer"]]) {
-    await db.query("insert into profiles values ($1,$2,'이름',$3,'development',array['TypeScript'])", [id, role, id === incomplete ? "" : "자기소개"]);
+    await db.query("insert into auth.users(id,email) values($1,$2)", [id, `${id}@test.example`]);
+    await db.query("update profiles set role=$2,name='이름',bio=$3,category='웹 개발',skills=array['TypeScript'] where id=$1", [id, role, id === incomplete ? "" : "자기소개"]);
   }
   for (const project of [p1, p2, p3, p4, p5, p6]) {
-    await db.query("insert into projects values ($1,$2,'테스트 프로젝트','recruiting',now()-interval '1 day',now()+interval '1 day',null)", [project, client]);
+    await db.query("insert into projects(id,client_id,title,description,category,budget,status,recruit_start_at,recruit_end_at) values ($1,$2,'테스트 프로젝트','검증용 프로젝트입니다.','웹 개발',500000,'recruiting',now()-interval '1 day',now()+interval '1 day')", [project, client]);
   }
   await as("anon", null, async () => {
     await rejected(() => submit(), /permission denied/);
@@ -161,5 +141,27 @@ try {
   await db.query("update projects set deleted_at=now() where id=$1", [p6]);
   await as("authenticated", first, () => rejected(() => submit(p6), /PROJECT_NOT_FOUND/));
   check(await scalar("select count(*)::int from pg_tables where schemaname='public' and tablename in ('applications','notifications') and rowsecurity"), 2, "both tables enforce RLS");
-  console.log(`PASS: ${assertions} database assertions (ephemeral PostgreSQL/PGlite; minimum team fixtures).`);
+  await db.query("update profiles set role=null where id=$1", [stranger]);
+  await as("authenticated", stranger, () => rejected(() => submit(p4), /FREELANCER_REQUIRED/));
+  await db.query("update profiles set deleted_at=now() where id=$1", [first]);
+  await as("authenticated", first, async () => {
+    check(await scalar("select application_member_is_active()"), false, "soft-deleted member inactive");
+    check(await scalar("select count(*)::int from applications"), 0, "deleted member cannot read applications");
+    check(await scalar("select count(*)::int from notifications"), 0, "deleted member cannot read notifications");
+    await rejected(() => submit(p4), /FREELANCER_REQUIRED/);
+  });
+  await db.query("update profiles set deleted_at=null where id=$1", [first]);
+  await as("authenticated", first, async () => {
+    check(await scalar("select application_member_is_active()"), true, "active member verified");
+    check(await scalar("select name from profiles where id=$1", [first]), "이름", "name allowed by real profile column grants");
+    await rejected(() => db.query("select email from profiles where id=$1", [first]), /permission denied/);
+  });
+  await db.query("update profiles set deleted_at=now() where id=$1", [client]);
+  await as("authenticated", client, async () => {
+    await rejected(() => accept(g), /OWNER_REQUIRED/);
+    await rejected(() => scalar("select reject_application($1)", [f]), /OWNER_REQUIRED/);
+    await rejected(() => close(p2), /OWNER_REQUIRED/);
+    check(await scalar("select count(*)::int from applications"), 0, "deleted owner cannot read applications");
+  });
+  console.log(`PASS: ${assertions} database assertions (ephemeral PostgreSQL/PGlite; real 0100–0302 team migrations).`);
 } finally { await db.close(); }

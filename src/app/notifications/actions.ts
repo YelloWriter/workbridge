@@ -16,7 +16,8 @@ export async function readNotification(form: FormData) {
       .eq("id", id).eq("user_id", user.id).is("read_at", null).is("deleted_at", null);
     if (updateError) redirect("/notifications?error=read");
   }
-  revalidatePath("/notifications");
+  // The shared header also needs fresh props immediately after marking read.
+  revalidatePath("/", "layout");
   // Link comes from the database, never the submitted form. Still validate it.
   const safeLink = /^\/[\w]/.test(data.link) && !/[\\\u0000-\u0020]/.test(data.link);
   redirect(safeLink ? data.link : "/notifications");
@@ -27,6 +28,6 @@ export async function readAllNotifications() {
   const { error } = await supabase.from("notifications").update({ read_at: new Date().toISOString() })
     .eq("user_id", user.id).is("read_at", null).is("deleted_at", null);
   if (error) redirect("/notifications?error=read");
-  revalidatePath("/notifications");
+  revalidatePath("/", "layout");
   redirect("/notifications");
 }
