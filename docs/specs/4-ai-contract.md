@@ -3,7 +3,7 @@
 작성일: 2026-11-25. 기준: `docs/TEAM.md`, `docs/rea/4-ai-contract.md`, `docs/decisions/2026-11-25-4-amount-agreement.md`.
 브랜치: `feat/4-ai-contract`. 3번 지원 화면과 SQL은 고치지 않습니다.
 
-이 문서는 동작 약속입니다. 화면 코드와 동의·거부·서명 함수는 이어서 만듭니다. 표는 `supabase/migrations/0400_ai_estimates.sql`, `0401_contracts.sql` 에 있습니다.
+이 문서는 동작 약속입니다. 표는 `0400`, `0401`, 참고 견적 저장은 `0402`, 동의·거부·서명은 `0403` 입니다. 화면은 `/contracts` 와 `/contracts/[id]` 입니다.
 
 ## 화면
 
@@ -41,7 +41,7 @@
 
 브라우저가 `ai_estimates` 나 `contracts` 에 직접 넣거나 고치지 않습니다. 참고 견적 저장은 `save_ai_estimate` 하나만 호출합니다. 예산 반영은 의뢰인 본인의 프로젝트 수정 권한으로 `projects.budget` 만 바꿉니다. 계약처럼 여러 표를 같이 바꾸는 일은 함수 하나로 처리하고, 중간에 실패하면 함께 되돌아갑니다.
 
-`save_ai_estimate` 는 `0402` SQL에 있습니다. 동의·거부·서명 함수는 이어서 만듭니다. `0400`, `0401` 은 표와 조회 권한만 가지고 있어 다시 만들지 않습니다.
+`save_ai_estimate` 는 `0402` SQL에 있습니다. 동의·거부·서명은 `0403` 의 `agree_contract_amount`, `decline_contract_amount`, `sign_contract` 입니다. 수락 화면의 금액 입력은 3번의 `accept_application(p_application_id, p_agreed_amount)` 를 그대로 씁니다. `0400`, `0401` 은 표와 조회 권한만 가지고 있어 다시 만들지 않습니다.
 
 | 함수 | 누가 호출 | 확인하는 것 | 성공 시 |
 | --- | --- | --- | --- |
@@ -57,7 +57,7 @@
 
 거부가 성공한 뒤의 동의, 체결된 계약의 거부, 상대방 서명 시각을 바꾸는 호출은 실패합니다.
 
-알림은 함수 안에서 3번의 `create_notification` 만 호출합니다. 화면이 알림을 따로 보내지 않습니다. 이동 주소는 동의와 체결은 `/contracts/` 와 계약 id, 거부는 `/projects/` 와 프로젝트 id 와 `/applicants` 입니다.
+알림은 3번의 `create_notification` 을 같은 데이터베이스 작업 안에서 보냅니다. 화면이 알림을 따로 보내지 않습니다. 수락으로 금액이 저장되면 프리랜서에게 `amount_proposed` (`/contracts`). 동의하면 의뢰인에게 `amount_agreed`, 거부하면 의뢰인에게 `amount_declined`, 양쪽 서명이 끝나면 양쪽에게 `contract_signed`. 이동 주소는 동의와 체결은 `/contracts/` 와 계약 id, 거부는 `/projects/` 와 프로젝트 id 와 `/applicants` 입니다.
 
 ## 권한
 
