@@ -90,7 +90,7 @@ NEXT_PUBLIC_SITE_URL=http://localhost:3000
 SUPABASE_SERVICE_ROLE_KEY=대시보드의 service_role 또는 secret 키
 ```
 
-`TOSS_SECRET_KEY` 와 `OPENAI_API_KEY` 는 4번·5번 담당입니다. 1번이 채우지 않습니다.
+`NEXT_TOSS_CLIENT_KEY` 와 `TOSS_SECRET_KEY`, `OPENAI_API_KEY` 는 4번·5번 담당입니다. 1번이 채우지 않습니다. 토스 클라이언트 키에는 `NEXT_PUBLIC_` 를 붙이지 않습니다.
 
 이 세 값(URL, anon, service role)을 2·3·4·5번에게 **개인 메시지**로 보냅니다. 단톡방, GitHub, 이 문서에는 붙이지 않습니다.
 

@@ -18,7 +18,7 @@
 
 | 변수 | 어떤 키 | 어디 두나 |
 | --- | --- | --- |
-| `NEXT_PUBLIC_TOSS_CLIENT_KEY` | `test_ck` 또는 `test_gck` 로 시작 | 브라우저에서 결제창을 열 때 |
+| `NEXT_TOSS_CLIENT_KEY` | `test_ck` 또는 `test_gck` 로 시작 | 서버가 읽어 결제창에 넘길 때. `NEXT_PUBLIC_` 는 붙이지 않음 |
 | `TOSS_SECRET_KEY` | 같은 세트의 `test_sk` 또는 `test_gsk` | 서버에서 승인을 확인할 때. `NEXT_PUBLIC_` 를 붙이지 않음 |
 
 두 키는 개발자센터에서 나란히 있는 한 세트여야 합니다. 서로 다른 세트를 섞거나 테스트 키와 라이브 키를 섞으면 결제가 거절됩니다.
@@ -126,7 +126,7 @@
 3. 상점이 여러 개면 **개발 연동 체험** 또는 **개발자용 테스트상점**을 고릅니다.
 4. 화면 위쪽이 **테스트**인지 확인합니다. **라이브** 탭의 키는 복사하지 않습니다.
 5. 클라이언트 키와 시크릿 키가 같은 줄에 있는 한 세트를 복사합니다.
-   - 클라이언트 키는 `test_ck` 또는 `test_gck` 로 시작합니다. `.env.local` 의 `NEXT_PUBLIC_TOSS_CLIENT_KEY`
+   - 클라이언트 키는 `test_ck` 또는 `test_gck` 로 시작합니다. `.env.local` 의 `NEXT_TOSS_CLIENT_KEY`
    - 시크릿 키는 `test_sk` 또는 `test_gsk` 로 시작합니다. `TOSS_SECRET_KEY`
 6. `live_` 로 시작하는 키가 보이면 그 칸은 비워 둡니다.
 7. 파일을 저장한 뒤 개발 서버를 다시 켭니다. 이 파일은 커밋하지 않습니다.
