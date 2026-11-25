@@ -55,7 +55,7 @@ async function PaymentContent({ params }: { params: Promise<{ contractId: string
   const amount = Number(payment?.amount ?? contract.agreed_amount);
   const fee = payment ? Number(payment.fee_amount) : Math.floor(amount * 10 / 100);
   const payout = payment ? Number(payment.payout_amount) : amount - fee;
-  const clientKey = process.env.NEXT_PUBLIC_TOSS_CLIENT_KEY ?? "";
+  const clientKey = process.env.NEXT_TOSS_CLIENT_KEY ?? process.env.NEXT_PUBLIC_TOSS_CLIENT_KEY ?? "";
 
   async function begin() {
     "use server";
