@@ -15,3 +15,5 @@
 4번에게: 계약 상세에 `DeliveryActions` 를 넣어 주세요. 파일은 `src/components/payments/delivery-actions.tsx` 입니다. 납품 요청과 완료 승인 버튼이 들어 있습니다.
 
 로컬에서 `npm run build` 는 성공했습니다. 화면 주소는 `/payments/[contractId]`, `/payments/success`, `/payments/fail`, `/payments/history`, `/reviews/new/[contractId]` 입니다. 키를 넣은 뒤에 시연 계정으로 결제 준비, 테스트 카드 승인, 납품 요청, 완료 승인, 리뷰 한 번 작성까지 순서대로 확인하면 됩니다.
+
+확인 순서는 키를 채운 뒤 시연 의뢰인으로 결제 준비, 테스트 카드, 프리랜서 납품 요청, 의뢰인 완료 승인, 양쪽 리뷰 한 번씩이다.
