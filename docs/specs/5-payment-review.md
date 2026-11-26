@@ -2,7 +2,7 @@
 
 화면 흐름의 참고는 `docs/rea/5-payment-review.md`. 금액 계산은 `docs/decisions/2026-11-24-payments.md`. 표는 `supabase/migrations/0500_payments.sql`, `0501_reviews.sql`.
 
-이 문서는 월요일 명세입니다. 화면 코드는 이어서 만듭니다.
+이 문서는 기능 범위입니다. 파일 이름, 함수 입력, 오류 코드 같은 구현 세부는 `docs/specs/5-payment-review-detail.md` 에 있습니다.
 
 ## 쓰는 사람
 
