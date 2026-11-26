@@ -3,7 +3,7 @@
 작성일: 2026-11-25. 기준: `docs/TEAM.md`, `docs/rea/4-ai-contract.md`, `docs/decisions/2026-11-25-4-amount-agreement.md`.
 브랜치: `feat/4-ai-contract`. 3번 지원 화면과 SQL은 고치지 않습니다.
 
-이 문서는 동작 약속입니다. 표는 `0400`, `0401`, 참고 견적 저장은 `0402`, 동의·거부·서명은 `0403` 입니다. 화면은 `/contracts` 와 `/contracts/[id]` 입니다.
+세부 구현은 `docs/specs/4-ai-contract-detail.md` 입니다. 이 문서는 동작 약속입니다. 표는 `0400`, `0401`, 참고 견적 저장은 `0402`, 동의·거부·서명은 `0403` 입니다. 화면은 `/contracts` 와 `/contracts/[id]` 입니다.
 
 ## 화면
 
