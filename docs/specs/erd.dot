@@ -1,0 +1,98 @@
+digraph ERD {
+  graph [rankdir=LR, fontname="WenQuanYi Micro Hei", fontsize=12, splines=true, nodesep=0.45, ranksep=0.9, bgcolor=white];
+  node [shape=plaintext, fontname="WenQuanYi Micro Hei", fontsize=11];
+  edge [fontname="WenQuanYi Micro Hei", fontsize=10, color="#334155"];
+
+  users [label=<
+    <TABLE BORDER="1" CELLBORDER="0" CELLSPACING="0" CELLPADDING="4">
+      <TR><TD BGCOLOR="#0f172a"><FONT COLOR="white"><B>로그인 계정 auth.users</B></FONT></TD></TR>
+      <TR><TD ALIGN="LEFT">id 계정번호</TD></TR>
+      <TR><TD ALIGN="LEFT">email</TD></TR>
+    </TABLE>>];
+  profiles [label=<
+    <TABLE BORDER="1" CELLBORDER="0" CELLSPACING="0" CELLPADDING="4">
+      <TR><TD BGCOLOR="#0f766e"><FONT COLOR="white"><B>회원 profiles (1번)</B></FONT></TD></TR>
+      <TR><TD ALIGN="LEFT">id = auth.users.id</TD></TR>
+      <TR><TD ALIGN="LEFT">role client | freelancer</TD></TR>
+      <TR><TD ALIGN="LEFT">name, email, avatar, bio</TD></TR>
+      <TR><TD ALIGN="LEFT">의뢰인: 회사, 업종, 웹사이트</TD></TR>
+      <TR><TD ALIGN="LEFT">프리랜서: 분야, 기술, 경력, 단가</TD></TR>
+    </TABLE>>];
+  projects [label=<
+    <TABLE BORDER="1" CELLBORDER="0" CELLSPACING="0" CELLPADDING="4">
+      <TR><TD BGCOLOR="#1d4ed8"><FONT COLOR="white"><B>프로젝트 projects (2번)</B></FONT></TD></TR>
+      <TR><TD ALIGN="LEFT">id</TD></TR>
+      <TR><TD ALIGN="LEFT">client_id → 회원</TD></TR>
+      <TR><TD ALIGN="LEFT">title, description, category</TD></TR>
+      <TR><TD ALIGN="LEFT">skills, budget, 모집기간</TD></TR>
+      <TR><TD ALIGN="LEFT">status 모집→계약→작업→완료</TD></TR>
+    </TABLE>>];
+  bookmarks [label=<
+    <TABLE BORDER="1" CELLBORDER="0" CELLSPACING="0" CELLPADDING="4">
+      <TR><TD BGCOLOR="#1d4ed8"><FONT COLOR="white"><B>북마크 bookmarks (2번)</B></FONT></TD></TR>
+      <TR><TD ALIGN="LEFT">user_id + project_id</TD></TR>
+      <TR><TD ALIGN="LEFT">한 회원·한 프로젝트 1번</TD></TR>
+    </TABLE>>];
+  applications [label=<
+    <TABLE BORDER="1" CELLBORDER="0" CELLSPACING="0" CELLPADDING="4">
+      <TR><TD BGCOLOR="#b45309"><FONT COLOR="white"><B>지원서 applications (3번)</B></FONT></TD></TR>
+      <TR><TD ALIGN="LEFT">project_id, freelancer_id</TD></TR>
+      <TR><TD ALIGN="LEFT">소개, 제안금액, 제안일수</TD></TR>
+      <TR><TD ALIGN="LEFT">status, reject_reason</TD></TR>
+      <TR><TD ALIGN="LEFT">accepted_agreed_amount</TD></TR>
+    </TABLE>>];
+  notifications [label=<
+    <TABLE BORDER="1" CELLBORDER="0" CELLSPACING="0" CELLPADDING="4">
+      <TR><TD BGCOLOR="#b45309"><FONT COLOR="white"><B>알림 notifications (3번)</B></FONT></TD></TR>
+      <TR><TD ALIGN="LEFT">user_id 받는 사람</TD></TR>
+      <TR><TD ALIGN="LEFT">type, title, body, link</TD></TR>
+      <TR><TD ALIGN="LEFT">read_at, event_key</TD></TR>
+    </TABLE>>];
+  estimates [label=<
+    <TABLE BORDER="1" CELLBORDER="0" CELLSPACING="0" CELLPADDING="4">
+      <TR><TD BGCOLOR="#6d28d9"><FONT COLOR="white"><B>참고 견적 ai_estimates (4번)</B></FONT></TD></TR>
+      <TR><TD ALIGN="LEFT">project_id, client_id</TD></TR>
+      <TR><TD ALIGN="LEFT">items 기능별 단가</TD></TR>
+      <TR><TD ALIGN="LEFT">total_amount</TD></TR>
+    </TABLE>>];
+  contracts [label=<
+    <TABLE BORDER="1" CELLBORDER="0" CELLSPACING="0" CELLPADDING="4">
+      <TR><TD BGCOLOR="#6d28d9"><FONT COLOR="white"><B>계약 contracts (4번)</B></FONT></TD></TR>
+      <TR><TD ALIGN="LEFT">project_id, application_id</TD></TR>
+      <TR><TD ALIGN="LEFT">client_id, freelancer_id</TD></TR>
+      <TR><TD ALIGN="LEFT">agreed_amount, 기간, 서명</TD></TR>
+      <TR><TD ALIGN="LEFT">status signing | signed</TD></TR>
+    </TABLE>>];
+  payments [label=<
+    <TABLE BORDER="1" CELLBORDER="0" CELLSPACING="0" CELLPADDING="4">
+      <TR><TD BGCOLOR="#be123c"><FONT COLOR="white"><B>결제 payments (5번)</B></FONT></TD></TR>
+      <TR><TD ALIGN="LEFT">contract_id</TD></TR>
+      <TR><TD ALIGN="LEFT">order_id, payment_key</TD></TR>
+      <TR><TD ALIGN="LEFT">amount, fee 10%, payout</TD></TR>
+      <TR><TD ALIGN="LEFT">status ready|paid|paid_out</TD></TR>
+    </TABLE>>];
+  reviews [label=<
+    <TABLE BORDER="1" CELLBORDER="0" CELLSPACING="0" CELLPADDING="4">
+      <TR><TD BGCOLOR="#be123c"><FONT COLOR="white"><B>리뷰 reviews (5번)</B></FONT></TD></TR>
+      <TR><TD ALIGN="LEFT">contract_id</TD></TR>
+      <TR><TD ALIGN="LEFT">reviewer_id, reviewee_id</TD></TR>
+      <TR><TD ALIGN="LEFT">rating 1~5, content, tags</TD></TR>
+      <TR><TD ALIGN="LEFT">한 계약·한 사람 1번</TD></TR>
+    </TABLE>>];
+
+  users -> profiles [label="1명"];
+  profiles -> projects [label="의뢰인이 여러 개"];
+  profiles -> bookmarks [label="찜"];
+  projects -> bookmarks [label="여러 사람"];
+  profiles -> applications [label="지원"];
+  projects -> applications [label="지원서 여러 개"];
+  profiles -> notifications [label="알림"];
+  profiles -> estimates [label="의뢰인"];
+  projects -> estimates [label="견적 여러 번"];
+  projects -> contracts [label="진행 계약 1개"];
+  applications -> contracts [label="수락 1건"];
+  profiles -> contracts [label="양쪽 당사자"];
+  contracts -> payments [label="살아 있는 결제 1개"];
+  contracts -> reviews [label="양쪽 각 1번"];
+  profiles -> reviews [label="작성·수신"];
+}
