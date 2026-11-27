@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useActionState, useRef, useState } from "react";
 import { CATEGORIES, SKILLS } from "@/lib/constants";
+import { AiEstimateButton } from "@/components/ai/estimate-button";
 import type { FormState } from "./model";
 import { buttonClass, inputClass, PreviewNotice, subButtonClass } from "./ui";
 
@@ -115,9 +116,9 @@ export function ProjectForm({
             <input id="budget" type="number" name="budget" required min={0} max={999999999999} step={1} inputMode="numeric"
               value={budget} onChange={(e) => setBudget(e.target.value)} readOnly={lockBudgetAndEnd}
               className={`w-full max-w-xs rounded-lg border border-slate-300 bg-background p-3 focus:outline-2 focus:outline-teal-600 ${lockBudgetAndEnd ? "bg-slate-50" : ""}`} />
-            {/* 4번 담당: AI 단가 분석 버튼을 이 자리에 연결해 주세요. */}
+            {/* 4번이 만든 AI 단가 분석 버튼. 수정 화면에서는 견적 화면으로 이동하고, 등록 화면에서는 안내만 보여 준다. */}
             <div data-slot="ai-estimate-button">
-              <button type="button" disabled title="AI 단가 분석은 4번 담당이 연결합니다" className={subButtonClass}>AI 단가 분석</button>
+              <AiEstimateButton />
             </div>
           </div>
           <p className="mt-2 text-xs text-slate-500">

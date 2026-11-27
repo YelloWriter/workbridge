@@ -7,7 +7,8 @@ import { buttonClass, inputClass, subButtonClass } from "./ui";
 export function ProjectFilters({ params }: { params: ListParams }) {
   const count = activeFilterCount(params);
   return (
-    <form action="/projects" method="get" className="mb-6 space-y-4 rounded-2xl border border-slate-200 p-4 sm:p-6">
+    // 주소 조건이 바뀌면 폼을 새로 그린다. "필터 초기화"(화면 이동 없이 주소만 바뀜) 뒤에 전 조건이 칸에 남지 않게 한다.
+    <form key={JSON.stringify(params)} action="/projects" method="get" className="mb-6 space-y-4 rounded-2xl border border-slate-200 p-4 sm:p-6">
       {params.sort !== "latest" && <input type="hidden" name="sort" value={params.sort} />}
       <div className="flex flex-wrap gap-3">
         <label className="min-w-0 flex-1">
